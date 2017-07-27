@@ -34,6 +34,7 @@ module Sidekiq::RateLimiter
       Sidekiq.redis do |conn|
         lim = Limit.new(conn, options)
         if lim.exceeded?(klass)
+          Sidekiq.logger.warn "[sidekiq-rate-limiter] limiting #{klass} for #{name}"
           conn.lpush("queue:#{work.queue_name}", work.respond_to?(:message) ? work.message : work.job)
           nil
         else
